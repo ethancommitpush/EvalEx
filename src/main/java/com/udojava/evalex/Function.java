@@ -1,8 +1,11 @@
 /*
- * Copyright 2018 Udo Klimaschewski
+ * Copyright 2012-2018 Udo Klimaschewski
  * 
  * http://UdoJava.com/
  * http://about.me/udo.klimaschewski
+ *
+ * Derivative work: ExBuilder (https://github.com/ethancommitpush)
+ * Modifications Copyright 2018 Yisin Lin
  * 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -27,21 +30,49 @@
 package com.udojava.evalex;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Base interface which is required for all directly evaluated functions.
- */
-public interface Function extends LazyFunction {
+import idv.ethancommitpush.exbuilder.ExpNode;
+
+
+public abstract class Function extends LazyFunction {
+	
+	public Function(String name, int numParams) {
+		super(name, numParams);
+	}
+
+	public LazyNumber lazyEval(final List<LazyNumber> lazyParams) {
+		return new LazyNumber() {
+		    
+		    private List<ExpNode> params;
+		    
+			public ExpNode eval() throws Exception {
+				return Function.this.eval(getParams());
+			}
+
+			public String getString() throws Exception {
+				return String.valueOf(Function.this.eval(getParams()));
+			}
+			
+			private List<ExpNode> getParams() throws Exception {
+                if (params == null) {
+                    params = new ArrayList<ExpNode>();
+                    for (LazyNumber lazyParam : lazyParams) {
+                        params.add(lazyParam.eval());
+                    }
+                }
+	            return params;
+			}
+		};
+	}
 
 	/**
 	 * Implementation for this function.
-	 *
-	 * @param parameters
-	 *            Parameters will be passed by the expression evaluator as a
-	 *            {@link List} of {@link BigDecimal} values.
-	 * @return The function must return a new {@link BigDecimal} value as a
-	 *         computing result.
+	 * @param parameters Parameters will be passed by the expression evaluator 
+	 * as a {@link List} of {@link BigDecimal} values.
+	 * @return The function must return a new {@link BigDecimal} value as a computing result.
+	 * @throws Exception 
 	 */
-	public abstract BigDecimal eval(List<BigDecimal> parameters);
+	public abstract ExpNode eval(List<ExpNode> parameters) throws Exception;
 }

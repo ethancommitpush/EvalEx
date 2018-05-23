@@ -1,8 +1,11 @@
 /*
- * Copyright 2018 Udo Klimaschewski
+ * Copyright 2012-2018 Udo Klimaschewski
  * 
  * http://UdoJava.com/
  * http://about.me/udo.klimaschewski
+ *
+ * Derivative work: ExBuilder (https://github.com/ethancommitpush)
+ * Modifications Copyright 2018 Yisin Lin
  * 
  * Permission is hereby granted, free of charge, to any person obtaining
  * a copy of this software and associated documentation files (the
@@ -27,59 +30,35 @@
 package com.udojava.evalex;
 
 import java.util.List;
+import java.util.Locale;
 
-import com.udojava.evalex.Expression.LazyNumber;
-
-/**
- * Base interface which is required for lazily evaluated functions. A function
- * is defined by a name, a number of parameters it accepts and of course
- * the logic for evaluating the result.
- */
-public interface LazyFunction {
+public abstract class LazyFunction {
+	/** Name of this function. */
+	private String name;
+	/** Number of parameters expected for this function.<code>-1</code> denotes a variable number of parameters. */
+	private int numParams;
 
 	/**
-	 * Gets the name of this function.<br>
-	 * <br>
-	 * The name is use to invoke this function in the expression.
-	 * 
-	 * @return The name of this function.
+	 * Creates a new function with given name and parameter count.
+	 * @param name The name of the function.
+	 * @param numParams The number of parameters for this function. <code>-1</code> denotes a variable number of parameters.
 	 */
-	public abstract String getName();
+	public LazyFunction(String name, int numParams) {
+		this.name = name.toUpperCase(Locale.ROOT);
+		this.numParams = numParams;
+	}
+	
+	public String getName() {
+		return name;
+	}
 
-	/**
-	 * Gets the number of parameters this function accepts.<br>
-	 * <br>
-	 * A value of <code>-1</code> denotes that this function accepts a variable
-	 * number of parameters.
-	 * 
-	 * @return The number of parameters this function accepts.
-	 */
-	public abstract int getNumParams();
+	public int getNumParams() {
+		return numParams;
+	}
 
-	/**
-	 * Gets whether the number of accepted parameters varies.<br>
-	 * <br>
-	 * That means that the function does accept an undefined amount of
-	 * parameters.
-	 * 
-	 * @return <code>true</code> if the number of accepted parameters varies.
-	 */
-	public abstract boolean numParamsVaries();
-
-	/**
-	 * Gets whether this function evaluates to a boolean expression.
-	 * 
-	 * @return <code>true</code> if this function evaluates to a boolean
-	 *         expression.
-	 */
-	public abstract boolean isBooleanFunction();
-
-	/**
-	 * Lazily evaluate this function.
-	 * 
-	 * @param lazyParams
-	 *            The accepted parameters.
-	 * @return The lazy result of this function.
-	 */
+	public boolean numParamsVaries() {
+		return numParams < 0;
+	}
+	
 	public abstract LazyNumber lazyEval(List<LazyNumber> lazyParams);
 }
